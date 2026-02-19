@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { CLINIC_STATUS_REPOSITORY } from '../../contracts/clinic-status.dto';
-import { ClinicStatusRepository } from '../../domain/clinic-status.repository';
+import type { ClinicStatusRepository } from '../../domain/clinic-status.repository';
 
 @Injectable()
 export class GetClinicStatusHandler {
