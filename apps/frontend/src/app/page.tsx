@@ -24,10 +24,17 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-white px-6 py-16 text-zinc-900">
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-8">
-        <header className="flex flex-col gap-2">
-          <span className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
-            AudiologyLink
-          </span>
+        <header className="flex flex-col gap-4">
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo.png"
+              alt="AudiologyLink"
+              className="h-10 w-auto"
+            />
+            <span className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
+              AudiologyLink
+            </span>
+          </div>
           <h1 className="text-3xl font-semibold tracking-tight">
             Clinic Status
           </h1>
