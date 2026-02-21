@@ -410,7 +410,7 @@ All clinical access must pass through the backend.
 
 ---
 
-## UI / Brand System
+## UI / Brand System & Template Strategy
 
 Brand colors must remain consistent:
 
@@ -421,8 +421,52 @@ White → Clean clinical interface
 No random color usage.
 All colors must be defined in Tailwind config.
 
-UI must use component-based system.
+UI must use a component-based system built on:
+- Next.js (TypeScript) App Router
+- TailwindCSS utility classes
+- shadcn/ui component library
+
+The primary frontend shell is an admin/dashboard layout with:
+- Persistent sidebar navigation for feature modules
+- Top header for search, user menu, and clinic context
+- Main content area for cards, tables, forms, and detail views
+
+All screens MUST be composed from the shared dashboard primitives:
+- Navigation shell (sidebar + header)
+- Cards and stats blocks
+- Data tables with filters and pagination
+- Forms, dialogs, drawers/sheets, and tabs
+
+Do not introduce additional UI frameworks.
+Do not create ad-hoc bespoke layouts when an existing dashboard pattern fits.
 Do not create inconsistent styling patterns.
+
+### Module UX Pattern (Professional Portal)
+
+Any backend module that surfaces UI in the professional portal must follow a standard pattern:
+
+- Sidebar navigation entry named after the module’s business purpose
+- List route: `/[module]` using a table-based view
+- Create route: `/[module]/new` or a create sheet/dialog
+- Detail route: `/[module]/[id]` showing the entity overview
+
+List pages:
+- Use shadcn/ui table components with search, filters, and pagination
+- Show key columns that match the module’s contracts
+- Provide row-level actions via buttons or dropdown menus
+
+Detail pages:
+- Use a summary card at the top for the most important fields
+- Use tabs to separate sub-areas (overview, history, notes, attachments, etc.)
+- Provide clear primary actions (edit, archive, add note, attach document)
+
+Forms (create/edit):
+- Use the shared Form, Input, Select, Textarea, and date/time components
+- Group fields logically using cards or sections
+- Show inline validation errors and a clear global error state
+
+These rules define the generic module UX.
+Actual module names (patients, appointments, clinicians, etc.) can change without changing this pattern.
 
 ---
 
@@ -488,6 +532,16 @@ npx shadcn@latest init
 - Enforce brand in tailwind.config:
   - Primary Blue, Medical Green, White
   - Components must use the shared design tokens; no ad-hoc colors
+
+- Base the application UI on a dashboard-style layout:
+  - Sidebar navigation for core modules (Patients, Appointments, Clinicians, Reports, Settings)
+  - Top header with search, notifications, and user account menu
+  - Content area that uses cards, tables, and forms from shadcn/ui
+
+- When designing new screens:
+  - Prefer existing shadcn/ui components (Card, Table, Dialog, Sheet, Tabs, Form)
+  - Reuse dashboard patterns instead of inventing new layouts
+  - Keep flows form- and table-centric; avoid marketing-style layouts in the professional portal
 
 ## Backend (NestJS Modulith)
 
