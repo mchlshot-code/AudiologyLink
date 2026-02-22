@@ -25,6 +25,15 @@
 
 [Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
 
+## API Endpoints
+
+- `GET /api/clinic-status`
+  - Response:
+    - `clinicId`: string
+    - `name`: string
+    - `status`: "open" | "closed"
+    - `updatedAt`: ISO timestamp string
+
 ## Project setup
 
 ```bash

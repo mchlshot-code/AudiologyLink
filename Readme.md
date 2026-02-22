@@ -36,7 +36,7 @@ The architecture is designed to be **extensible**: adding a new feature usually 
 AudiologyLink is structured as a monorepo. At the top level you will see:
 
 - `apps/` – runnable applications (things you actually start/deploy)
-- `modules/` (or similar) – domain modules (reusable building blocks for the backend)
+- `apps/backend/src/modules` – backend domain modules (reusable feature building blocks)
 - Shared configuration and tooling (e.g. TypeScript config, linting, etc.)
 
 ### 2.1 Apps (Runnables)
@@ -125,22 +125,22 @@ When you add a new feature (e.g. “Clinic Locations”):
 
 ## 5. Local Development Overview
 
-Exact commands depend on the package manager and root `package.json` configuration. The typical workflow is:
+Exact commands depend on the package manager used within each app. There is no root `package.json` in this repo.
 
 ### 5.1 Install Dependencies
 
-From the repo root:
+Install dependencies per app:
 
 ```bash
-# Use the package manager configured for the project
+cd apps/backend
 npm install
-# or
-yarn install
-# or
-pnpm install
-```
 
-Check the root `package.json` to confirm which one is expected.
+cd apps/frontend
+npm install
+
+cd apps/cms
+npm install
+```
 
 ### 5.2 Environment Configuration
 
@@ -158,24 +158,20 @@ Check the root `package.json` to confirm which one is expected.
 
 ### 5.3 Running Apps
 
-Look in the root `package.json` for scripts such as:
-
-- `dev` – start the full dev stack
-- `dev:web` or similar – start the frontend app
-- `dev:api` or similar – start the backend API
-- `dev:cms` – start Strapi
-
-Typical pattern (adjust names to match your scripts):
+Run each app from its own folder:
 
 ```bash
 # Start backend API (NestJS)
-npm run dev:api
+cd apps/backend
+npm run start:dev
 
 # Start frontend (Next.js)
-npm run dev:web
+cd apps/frontend
+npm run dev
 
 # Start CMS (Strapi)
-npm run dev:cms
+cd apps/cms
+npm run develop
 ```
 
 Then:
@@ -208,6 +204,17 @@ If content is needed (e.g. an info banner about appointment policies):
 
 ---
 
+## 6.1 API Endpoints
+
+- `GET /api/clinic-status`
+  - Response:
+    - `clinicId`: string
+    - `name`: string
+    - `status`: "open" | "closed"
+    - `updatedAt`: ISO timestamp string
+
+---
+
 ## 7. Extending the System (Beginner Roadmap)
 
 If you’re new and want to extend this project:
@@ -217,7 +224,7 @@ If you’re new and want to extend this project:
    - Run them locally and click around to understand what exists.
 
 2. **Explore modules**
-   - Look under the modules directory (often `modules/` or `apps/api/src/modules`).
+   - Look under `apps/backend/src/modules`.
    - Identify a module that interests you (e.g. `patients`, `appointments`).
    - Open it and see:
      - Entity/model file

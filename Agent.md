@@ -227,6 +227,75 @@ Public site remains unauthenticated.
 
 ---
 
+# 🔟.1️⃣ Backend AuthModule Scaffold (Current)
+
+AuthModule lives in `apps/backend/src/modules/auth` and follows the standard module structure:
+
+/modules/auth
+    /contracts
+        auth.constants.ts
+        auth.dto.ts
+        auth.roles.ts
+        auth.types.ts
+        guards.ts
+        roles.decorator.ts
+        index.ts
+    /domain
+        auth.repository.ts
+        auth.service.ts
+        auth.user.ts
+        password-hasher.ts
+        token-payload.ts
+    /features
+        /login
+            endpoint.ts
+            handler.ts
+        /refresh
+            endpoint.ts
+            handler.ts
+    /infrastructure
+        bcrypt-password-hasher.ts
+        in-memory-auth.repository.ts
+        jwt.strategy.ts
+    auth.module.ts
+
+### Public Interface for Other Modules
+
+Other modules must import ONLY from `apps/backend/src/modules/auth/contracts/index.ts`:
+
+- `Roles()` decorator
+- `JwtAuthGuard`, `RolesGuard`
+- `Role`, `AuthenticatedUser`, and DTO types
+
+No module may import AuthModule internals.
+
+### Endpoints
+
+- `POST /api/auth/login`
+- `POST /api/auth/refresh`
+
+### Roles
+
+- admin
+- clinician
+- receptionist
+- patient
+
+### Environment Variables (Backend)
+
+- `JWT_ACCESS_SECRET`
+- `JWT_REFRESH_SECRET`
+- `JWT_ACCESS_TTL` (e.g. `15m`)
+- `JWT_REFRESH_TTL` (e.g. `7d`)
+- `AUTH_SEED_EMAIL`
+- `AUTH_SEED_PASSWORD`
+- `AUTH_SEED_ROLES` (comma-separated)
+
+### Passport Integration
+
+- `JwtStrategy` is registered inside AuthModule
+- Guards in contracts use Passport’s `jwt` strategy
+
 # 1️⃣1️⃣ Database Rules
 
 - One database server
@@ -499,7 +568,7 @@ This section provides a concrete, minimal path to begin building AudiologyLink w
   - /apps/frontend → Next.js (TypeScript, Tailwind, shadcn/ui)
   - /apps/backend → NestJS (Modular Monolith)
   - /apps/cms → Strapi (Headless CMS)
-  - /modules → Core business modules (contracts/domain/infrastructure/features)
+  - /modules → Optional shared libraries if cross-app reuse is required
 
 ## Frontend (Next.js)
 
@@ -641,6 +710,13 @@ npm run develop
   - Use vertical slice features inside /features
   - Communicate across modules via events and Outbox/Inbox pattern
   - Host app contains zero business logic (composition root only)
+
+## Best Module Pattern (Use This)
+
+- Keep modules inside apps/backend/src/modules for this codebase
+- Do not create a root-level modules/ unless you are extracting shared libraries for multiple apps
+- Each module owns its data, rules, and public contracts; no cross-module imports beyond contracts
+- Compose modules in the backend app only; avoid duplicating domain logic in the frontend or CMS
 
 ## Testing & Quality Gates
 

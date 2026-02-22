@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 type ClinicStatus = {
   clinicId: string;
   name: string;
@@ -26,11 +28,7 @@ export default async function Home() {
       <main className="mx-auto flex w-full max-w-4xl flex-col gap-8">
         <header className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
-            <img
-              src="/logo-rbg.png"
-              alt="AudiologyLink"
-              className="h-10 w-auto"
-            />
+            <Image src="/logo-rbg.png" alt="AudiologyLink" width={160} height={40} />
             <span className="text-sm font-semibold uppercase tracking-wide text-emerald-700">
               AudiologyLink
             </span>
