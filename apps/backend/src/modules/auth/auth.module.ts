@@ -6,6 +6,8 @@ import { AUTH_REPOSITORY, PASSWORD_HASHER } from './contracts/auth.constants';
 import { AUTH_ROLES, type Role } from './contracts/auth.roles';
 import { LoginEndpoint } from './features/login/endpoint';
 import { LoginHandler } from './features/login/handler';
+import { RegisterEndpoint } from './features/register/endpoint';
+import { RegisterHandler } from './features/register/handler';
 import { RefreshEndpoint } from './features/refresh/endpoint';
 import { RefreshHandler } from './features/refresh/handler';
 import type { AuthRepository } from './domain/auth.repository';
@@ -15,6 +17,7 @@ import { AuthService } from './domain/auth.service';
 import { BcryptPasswordHasher } from './infrastructure/bcrypt-password-hasher';
 import { InMemoryAuthRepository } from './infrastructure/in-memory-auth.repository';
 import { JwtStrategy } from './infrastructure/jwt.strategy';
+import { PostgresAuthRepository } from './infrastructure/postgres-auth.repository';
 
 const parseRoles = (value: string | undefined): Role[] => {
   if (!value) {
@@ -52,11 +55,12 @@ const getSeedUser = async (
 
 @Module({
   imports: [PassportModule, JwtModule.register({})],
-  controllers: [LoginEndpoint, RefreshEndpoint],
+  controllers: [LoginEndpoint, RefreshEndpoint, RegisterEndpoint],
   providers: [
     AuthService,
     LoginHandler,
     RefreshHandler,
+    RegisterHandler,
     JwtStrategy,
     {
       provide: PASSWORD_HASHER,
@@ -67,8 +71,14 @@ const getSeedUser = async (
       useFactory: async (
         passwordHasher: PasswordHasher,
       ): Promise<AuthRepository> => {
+        const repository = process.env.DATABASE_URL
+          ? new PostgresAuthRepository()
+          : new InMemoryAuthRepository();
         const seedUser = await getSeedUser(passwordHasher);
-        return new InMemoryAuthRepository(seedUser ? [seedUser] : []);
+        if (seedUser) {
+          await repository.saveUser(seedUser);
+        }
+        return repository;
       },
       inject: [PASSWORD_HASHER],
     },

@@ -3,6 +3,12 @@ export type LoginRequestDto = {
   password: string;
 };
 
+export type RegisterRequestDto = {
+  email: string;
+  password: string;
+  roles?: string[];
+};
+
 export type RefreshRequestDto = {
   refreshToken: string;
 };

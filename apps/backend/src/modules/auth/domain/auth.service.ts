@@ -1,11 +1,18 @@
-import { Inject, Injectable, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import type {
   AuthenticatedUser,
   AuthTokensDto,
   LoginRequestDto,
+  RegisterRequestDto,
 } from '../contracts';
+import { AUTH_ROLES, type Role } from '../contracts/auth.roles';
 import { AUTH_REPOSITORY, PASSWORD_HASHER } from '../contracts/auth.constants';
 import type { AuthRepository } from './auth.repository';
 import type { AuthUser } from './auth.user';
@@ -68,6 +75,27 @@ export class AuthService {
     if (!isValid) {
       throw new UnauthorizedException('Invalid credentials');
     }
+
+    return this.issueTokens(user);
+  }
+
+  async register(request: RegisterRequestDto): Promise<AuthTokensDto> {
+    const existing = await this.authRepository.findByEmail(request.email);
+    if (existing) {
+      throw new BadRequestException('Email already registered');
+    }
+
+    const roles = this.normalizeRoles(request.roles);
+    const passwordHash = await this.passwordHasher.hash(request.password);
+
+    const user: AuthUser = {
+      id: randomUUID(),
+      email: request.email,
+      passwordHash,
+      roles,
+    };
+
+    await this.authRepository.saveUser(user);
 
     return this.issueTokens(user);
   }
@@ -189,5 +217,21 @@ export class AuthService {
     };
 
     return new Date(now + value * (multipliers[unit] ?? multipliers.d));
+  }
+
+  private normalizeRoles(roles: string[] | undefined): Role[] {
+    if (!roles || roles.length === 0) {
+      return ['patient'];
+    }
+
+    const normalized = roles.map((role) => role.trim());
+    const invalid = normalized.filter(
+      (role) => !AUTH_ROLES.includes(role as Role),
+    );
+    if (invalid.length > 0) {
+      throw new BadRequestException(`Invalid roles: ${invalid.join(', ')}`);
+    }
+
+    return normalized as Role[];
   }
 }
