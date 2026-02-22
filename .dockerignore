@@ -1,0 +1,10 @@
+.git
+.gitignore
+.DS_Store
+**/node_modules
+**/.next
+**/dist
+**/.tmp
+**/.env
+**/.env.*
+**/*.log
