@@ -27,7 +27,7 @@ export default async function Home() {
         <header className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
             <img
-              src="/logo.png"
+              src="/logo-rbg.png"
               alt="AudiologyLink"
               className="h-10 w-auto"
             />
