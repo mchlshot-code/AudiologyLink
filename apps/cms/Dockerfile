@@ -2,7 +2,8 @@ FROM node:20-alpine AS development
 WORKDIR /app
 RUN apk add --no-cache python3 make g++
 COPY package*.json ./
-RUN npm ci --fetch-retry-mintimeout 20000 --fetch-retry-maxtimeout 120000 --fetch-retries 5
+COPY node_modules ./node_modules
+RUN npm rebuild better-sqlite3
 COPY . .
 EXPOSE 1337
 CMD ["npm","run","develop","--","--host","0.0.0.0","--port","1337"]
@@ -11,7 +12,8 @@ FROM node:20-alpine AS build
 WORKDIR /app
 RUN apk add --no-cache python3 make g++
 COPY package*.json ./
-RUN npm ci --fetch-retry-mintimeout 20000 --fetch-retry-maxtimeout 120000 --fetch-retries 5
+COPY node_modules ./node_modules
+RUN npm rebuild better-sqlite3
 COPY . .
 RUN npm run build
 
@@ -20,7 +22,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 RUN apk add --no-cache python3 make g++
 COPY package*.json ./
-RUN npm ci --omit=dev --fetch-retry-mintimeout 20000 --fetch-retry-maxtimeout 120000 --fetch-retries 5
+COPY node_modules ./node_modules
+RUN npm rebuild better-sqlite3
 COPY --from=build /app/config ./config
 COPY --from=build /app/database ./database
 COPY --from=build /app/public ./public
