@@ -434,7 +434,13 @@ Backend:
 - TypeScript
 
 Database:
-- PostgreSQL (Hosted via Supabase)
+- PostgreSQL 16 (Docker on Nigerian VPS)
+
+Sessions:
+- Redis 7 (Docker on Nigerian VPS)
+
+File Storage:
+- MinIO (S3-compatible, Docker on Nigerian VPS)
 
 CMS:
 - Strapi (Headless CMS)
@@ -442,16 +448,17 @@ CMS:
 
 ---
 
-## Single PaaS Hosting Rule
+## Single VPS Hosting Rule
 
-All services may be hosted under ONE Platform-as-a-Service provider.
-
-Example Structure:
+All services run on ONE Nigerian VPS using Docker containers.
 
 - Frontend Service → Next.js
 - Backend Service → NestJS Modulith
 - CMS Service → Strapi
-- Database → Supabase Postgres
+- Database → PostgreSQL 16
+- Sessions → Redis 7
+- File Storage → MinIO
+- Reverse Proxy → Nginx
 
 No Kubernetes.
 No microservices.
@@ -460,22 +467,14 @@ No unnecessary infrastructure complexity.
 
 ---
 
-## Supabase Usage Rules
+## NDPA Data Residency Rules
 
-Supabase may be used for:
+All patient data must remain on Nigerian soil.
 
-- Managed PostgreSQL
-- File storage
-- Optional authentication support
-
-Supabase must NOT:
-
-- Replace core business logic
-- Bypass modular boundaries
-- Be used as direct frontend database access
-- Allow public access to clinical schemas
-
-All clinical access must pass through the backend.
+- PostgreSQL, Redis, and MinIO run on a NiRA-accredited Nigerian VPS
+- CMS content is non-clinical but co-located on the same VPS
+- No foreign-hosted databases for clinical data
+- All clinical access must pass through the backend
 
 ---
 
@@ -559,8 +558,7 @@ This section provides a concrete, minimal path to begin building AudiologyLink w
 
 - Windows 10/11, Git, VS Code
 - Node.js 20+ with npm
-- Supabase account for PostgreSQL
-- Optional: Docker Desktop (for local Postgres if not using Supabase)
+- Docker Desktop (required for local PostgreSQL, Redis, MinIO)
 
 ## Workspace Bootstrap
 

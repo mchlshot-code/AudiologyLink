@@ -1,7 +1,7 @@
 FROM node:20-alpine AS development
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci
+COPY node_modules ./node_modules
 COPY . .
 EXPOSE 3000
 CMD ["npm","run","dev","--","-H","0.0.0.0","-p","3000"]
@@ -11,7 +11,7 @@ WORKDIR /app
 ARG NEXT_PUBLIC_BACKEND_URL
 ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
 COPY package*.json ./
-RUN npm ci
+COPY node_modules ./node_modules
 COPY . .
 RUN npm run build
 
@@ -21,7 +21,7 @@ ARG NEXT_PUBLIC_BACKEND_URL
 ENV NEXT_PUBLIC_BACKEND_URL=$NEXT_PUBLIC_BACKEND_URL
 ENV NODE_ENV=production
 COPY package*.json ./
-RUN npm ci --omit=dev
+COPY node_modules ./node_modules
 COPY --from=build /app/.next ./.next
 COPY --from=build /app/public ./public
 EXPOSE 3000
