@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
+import type { Request } from 'express';
 import { AUTH_REPOSITORY } from '../contracts/auth.constants';
 import type { AccessTokenPayload } from '../domain/token-payload';
 import type { AuthRepository } from '../domain/auth.repository';
@@ -14,6 +15,15 @@ const getRequiredEnv = (name: string) => {
   return value;
 };
 
+/** Try cookie first, then Authorization header */
+const cookieThenBearer = (req: Request): string | null => {
+  const fromCookie = req.cookies?.accessToken;
+  if (fromCookie) {
+    return fromCookie as string;
+  }
+  return ExtractJwt.fromAuthHeaderAsBearerToken()(req);
+};
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
@@ -21,7 +31,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     private readonly authRepository: AuthRepository,
   ) {
     super({
-      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      jwtFromRequest: cookieThenBearer,
       ignoreExpiration: false,
       secretOrKey: getRequiredEnv('JWT_ACCESS_SECRET'),
     });

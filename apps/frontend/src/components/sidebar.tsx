@@ -11,12 +11,12 @@ import {
     Settings,
     LogOut,
     Menu,
-    X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { Sheet, SheetContent, SheetTrigger, SheetTitle } from "@/components/ui/sheet";
 import { useState } from "react";
+import { useAuth } from "@/components/auth-provider";
 
 const navItems = [
     { label: "Dashboard", href: "/", icon: LayoutDashboard },
@@ -56,6 +56,20 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
     );
 }
 
+function LogoutButton() {
+    const { logout } = useAuth();
+
+    return (
+        <button
+            onClick={() => void logout()}
+            className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors"
+        >
+            <LogOut className="h-4.5 w-4.5" />
+            Logout
+        </button>
+    );
+}
+
 /** Desktop sidebar — always visible on md+ */
 export function Sidebar() {
     return (
@@ -84,10 +98,7 @@ export function Sidebar() {
             {/* Footer */}
             <div className="px-3 pb-4">
                 <Separator className="bg-sidebar-border mb-3" />
-                <button className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent transition-colors">
-                    <LogOut className="h-4.5 w-4.5" />
-                    Logout
-                </button>
+                <LogoutButton />
             </div>
         </aside>
     );
@@ -129,8 +140,13 @@ export function MobileSidebar() {
 
                 <Separator className="bg-sidebar-border" />
 
-                <div className="py-4">
+                <div className="flex-1 py-4">
                     <NavLinks onNavigate={() => setOpen(false)} />
+                </div>
+
+                <div className="px-3 pb-4">
+                    <Separator className="bg-sidebar-border mb-3" />
+                    <LogoutButton />
                 </div>
             </SheetContent>
         </Sheet>

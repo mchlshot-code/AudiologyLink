@@ -227,7 +227,7 @@ Public site remains unauthenticated.
 
 ---
 
-# 🔟.1️⃣ Backend AuthModule Scaffold (Current)
+# 🔟.1️⃣ Backend AuthModule (Current)
 
 AuthModule lives in `apps/backend/src/modules/auth` and follows the standard module structure:
 
@@ -243,6 +243,7 @@ AuthModule lives in `apps/backend/src/modules/auth` and follows the standard mod
     /domain
         auth.repository.ts
         auth.service.ts
+        auth.service.spec.ts
         auth.user.ts
         password-hasher.ts
         token-payload.ts
@@ -253,11 +254,30 @@ AuthModule lives in `apps/backend/src/modules/auth` and follows the standard mod
         /refresh
             endpoint.ts
             handler.ts
+        /register
+            endpoint.ts
+            handler.ts
+        /me
+            endpoint.ts
+        /logout
+            endpoint.ts
     /infrastructure
         bcrypt-password-hasher.ts
+        cookie.helper.ts
         in-memory-auth.repository.ts
+        postgres-auth.repository.ts
         jwt.strategy.ts
     auth.module.ts
+
+### Token Delivery
+
+Tokens are delivered via HTTP-only cookies (`SameSite=Strict`):
+- `accessToken` cookie — path `/`, max-age from `JWT_ACCESS_TTL`
+- `refreshToken` cookie — path `/api/auth`, max-age from `JWT_REFRESH_TTL`
+
+No tokens are returned in JSON response bodies.
+`JwtStrategy` reads the access token from the cookie first, falls back
+to `Authorization: Bearer` header for API clients.
 
 ### Public Interface for Other Modules
 
@@ -271,8 +291,11 @@ No module may import AuthModule internals.
 
 ### Endpoints
 
-- `POST /api/auth/login`
-- `POST /api/auth/refresh`
+- `POST /api/auth/login` — sets auth cookies
+- `POST /api/auth/register` — sets auth cookies
+- `POST /api/auth/refresh` — reads refresh cookie, sets new cookies
+- `GET  /api/auth/me` — returns authenticated user (protected)
+- `POST /api/auth/logout` — clears auth cookies
 
 ### Roles
 
@@ -290,11 +313,20 @@ No module may import AuthModule internals.
 - `AUTH_SEED_EMAIL`
 - `AUTH_SEED_PASSWORD`
 - `AUTH_SEED_ROLES` (comma-separated)
+- `CORS_ORIGIN` (e.g. `http://localhost:3000`)
+
+### Frontend Auth Integration
+
+- Next.js middleware (`src/middleware.ts`) redirects unauthenticated
+  users to `/login` by checking the `accessToken` cookie presence
+- `AuthProvider` context fetches `GET /api/auth/me` on mount, provides
+  `{ user, loading, logout }` to dashboard components
+- All fetch calls use `credentials: "include"` for cookie transport
 
 ### Passport Integration
 
 - `JwtStrategy` is registered inside AuthModule
-- Guards in contracts use Passport’s `jwt` strategy
+- Guards in contracts use Passport's `jwt` strategy
 
 # 1️⃣1️⃣ Database Rules
 
@@ -498,14 +530,23 @@ No direct database access from frontend or CMS under any circumstance.
 
 ## UI / Brand System & Template Strategy
 
-Brand colors must remain consistent:
+Brand colors are derived from the AudiologyLink logo and defined as
+CSS custom properties in `apps/frontend/src/app/globals.css`.
 
-Primary Blue → Trust and authority
-Medical Green → Health and vitality
-White → Clean clinical interface
+| Role | Token | Hex Equivalent | Usage |
+|---|---|---|---|
+| Primary | `--primary` | Deep navy `#1B3A5C` | Trust / authority, headings |
+| Accent | `--brand-cyan` / `--accent` | Cyan `#00B4D8` | Active states, links, ring |
+| Destructive | `--destructive` | Coral-red `#E63946` | Errors, warnings, logo waves |
+| Success | `--success` | Medical green `#16A34A` | Health indicators, confirmations |
+| Sidebar | `--sidebar` | Very dark navy | Dark navigation shell |
+
+All values use OKLCH color space with light and dark theme variants.
 
 No random color usage.
-All colors must be defined in Tailwind config.
+All colors must be defined as CSS custom properties and referenced
+via Tailwind theme tokens (`text-primary`, `bg-brand-cyan`, etc.).
+Do not use arbitrary hex/rgb values in component code.
 
 UI must use a component-based system built on:
 - Next.js (TypeScript) App Router
@@ -618,9 +659,9 @@ npx tailwindcss init -p
 npx shadcn@latest init
 ```
 
-- Enforce brand in tailwind.config:
-  - Primary Blue, Medical Green, White
-  - Components must use the shared design tokens; no ad-hoc colors
+- Brand colors are defined in `globals.css` as CSS custom properties (OKLCH)
+  - Primary (deep navy), Accent/brand-cyan, Destructive (coral-red), Success (medical green)
+  - Components must use the shared design tokens (`text-primary`, `bg-brand-cyan`, etc.); no ad-hoc colors
 
 - Base the application UI on a dashboard-style layout:
   - Sidebar navigation for core modules (Patients, Appointments, Clinicians, Reports, Settings)

@@ -10,6 +10,8 @@ import { RegisterEndpoint } from './features/register/endpoint';
 import { RegisterHandler } from './features/register/handler';
 import { RefreshEndpoint } from './features/refresh/endpoint';
 import { RefreshHandler } from './features/refresh/handler';
+import { MeEndpoint } from './features/me/endpoint';
+import { LogoutEndpoint } from './features/logout/endpoint';
 import type { AuthRepository } from './domain/auth.repository';
 import type { AuthUser } from './domain/auth.user';
 import type { PasswordHasher } from './domain/password-hasher';
@@ -55,7 +57,13 @@ const getSeedUser = async (
 
 @Module({
   imports: [PassportModule, JwtModule.register({})],
-  controllers: [LoginEndpoint, RefreshEndpoint, RegisterEndpoint],
+  controllers: [
+    LoginEndpoint,
+    RefreshEndpoint,
+    RegisterEndpoint,
+    MeEndpoint,
+    LogoutEndpoint,
+  ],
   providers: [
     AuthService,
     LoginHandler,
@@ -84,4 +92,4 @@ const getSeedUser = async (
     },
   ],
 })
-export class AuthModule {}
+export class AuthModule { }
