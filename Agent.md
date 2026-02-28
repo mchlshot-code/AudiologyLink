@@ -298,12 +298,19 @@ No module may import AuthModule internals.
 
 # 1️⃣1️⃣ Database Rules
 
-- One database server
-- Separate schema per module
-- Research schema isolated
+- One Supabase project per environment (dev, production)
+- Separate schema per module — STRICT
 - No cross-schema SQL joins
+- Data sharing happens ONLY via events
 
-Data sharing happens ONLY via events.
+RLS Architecture Rules:
+- RLS must be ENABLED on every table before any data is written
+- Every module owns the RLS policies for its own schema
+- Service role key is used ONLY in the NestJS backend
+- Anon key is NEVER used — all access goes through the backend
+- No module may define RLS policies on another module's tables
+- RLS policies must be documented alongside the migration that 
+  creates the table
 
 ---
 
@@ -434,47 +441,58 @@ Backend:
 - TypeScript
 
 Database:
-- PostgreSQL 16 (Docker on Nigerian VPS)
+- PostgreSQL via Supabase (managed)
+- Row Level Security (RLS) is MANDATORY on every table
+- No table is accessible without an explicit RLS policy
 
 Sessions:
-- Redis 7 (Docker on Nigerian VPS)
+- Redis via Railway (managed plugin)
 
 File Storage:
-- MinIO (S3-compatible, Docker on Nigerian VPS)
+- Supabase Storage (S3-compatible, built into Supabase project)
 
 CMS:
 - Strapi (Headless CMS)
-- Hosted as separate service
+- Hosted on Railway
 
 ---
 
-## Single VPS Hosting Rule
+## Hosting Rule
 
-All services run on ONE Nigerian VPS using Docker containers.
+All services run on PaaS. No VPS. No self-hosted infrastructure.
+No Nginx to manage. No Docker in production.
 
-- Frontend Service → Next.js
-- Backend Service → NestJS Modulith
-- CMS Service → Strapi
-- Database → PostgreSQL 16
-- Sessions → Redis 7
-- File Storage → MinIO
-- Reverse Proxy → Nginx
+- Frontend → Vercel
+- Backend → Railway
+- CMS → Railway
+- Database → Supabase
+- Redis → Railway plugin
+- File Storage → Supabase Storage
 
-No Kubernetes.
-No microservices.
-No multi-cloud strategy.
-No unnecessary infrastructure complexity.
+This is the permanent production architecture.
+There is no planned migration to self-hosted infrastructure.
+
+Docker is used for LOCAL DEVELOPMENT ONLY if needed for isolated 
+testing. It is NOT required. All services are managed by 
+Supabase and Railway in both development and production.
 
 ---
 
-## NDPA Data Residency Rules
+## NDPA Compliance
 
-All patient data must remain on Nigerian soil.
+Cross-border hosting is authorised under NDPA 2023 via the 
+Standard Contractual Clauses gateway.
 
-- PostgreSQL, Redis, and MinIO run on a NiRA-accredited Nigerian VPS
-- CMS content is non-clinical but co-located on the same VPS
-- No foreign-hosted databases for clinical data
-- All clinical access must pass through the backend
+Instruments required:
+- Supabase DPA signed and stored at docs/legal/supabase-dpa.pdf
+- Patient onboarding consent must explicitly state that data is 
+  processed on foreign infrastructure under contractual 
+  NDPA-equivalent protections
+- DPIA must be completed before first real patient is onboarded,
+  stored at docs/legal/dpia.md
+
+All clinical data access must pass through the NestJS backend.
+No direct database access from frontend or CMS under any circumstance.
 
 ---
 
@@ -556,9 +574,13 @@ This section provides a concrete, minimal path to begin building AudiologyLink w
 
 ## Prerequisites
 
-- Windows 10/11, Git, VS Code
+- Windows 10/11, Git, VS Code or Cursor
 - Node.js 20+ with npm
-- Docker Desktop (required for local PostgreSQL, Redis, MinIO)
+- A Supabase account (supabase.com)
+- A Railway account (railway.app)
+- A Vercel account (vercel.com)
+- No Docker required. All services are managed by 
+  Supabase and Railway.
 
 ## Workspace Bootstrap
 
@@ -650,36 +672,28 @@ npx create-strapi-app@latest apps/cms --quickstart --no-run
 
 ## Database (Supabase)
 
-- Create a Supabase project and Postgres database
-- Generate a service role connection string and store it securely (environment variables only)
-- Adopt separate schemas per module; never perform cross-schema joins
-- Add a schema and table for the first vertical slice:
+- Create a Supabase project at supabase.com
+- Store the service role connection string in .env as DATABASE_URL
+- Never commit this key. Never expose it to the frontend.
+- Use the Supabase dashboard SQL editor to run migrations
+- Point your local .env directly at the Supabase project URL —
+  no local database setup required
 
-```sql
-create schema if not exists clinic;
+RLS rule for every new table:
+1. Create the schema migration
+2. Enable RLS immediately:
+   ALTER TABLE x ENABLE ROW LEVEL SECURITY;
+3. Write the RLS policy before writing any application code
+4. Document the policy in a comment above the migration
 
-create table if not exists clinic.clinic_status (
-  clinic_id text primary key,
-  name text not null,
-  status text not null,
-  updated_at timestamptz not null default now()
-);
-```
-
-- Add a starter row:
-
-```sql
-insert into clinic.clinic_status (clinic_id, name, status)
-values ('lagos-main', 'AudiologyLink Lagos', 'open')
-on conflict (clinic_id) do update
-set name = excluded.name,
-    status = excluded.status,
-    updated_at = now();
-```
+NDPA instrument:
+- Download and sign the Supabase DPA from the Supabase dashboard 
+  under Settings → Legal
+- Save it to docs/legal/supabase-dpa.pdf
 
 ## Running Locally
 
-- Use three terminals:
+Use three terminals:
 
 ```bash
 # Backend
@@ -695,11 +709,15 @@ cd apps/cms
 npm run develop
 ```
 
-- Backend runs on port 3001
-- Frontend runs on port 3000
+Backend → port 3001
+Frontend → port 3000
+CMS → port 1337
 
-- The Public BFF (frontend) consumes CMS content and operational data from the backend
-- The Professional portal authenticates via OpenID Connect and uses HttpOnly cookies
+Local database → your Supabase project (connect via DATABASE_URL 
+in .env — no local Docker or database setup required)
+Local Redis → your Railway Redis URL (set REDIS_URL in .env)
+
+No docker compose up. No local containers. Just npm run.
 
 ## Module Scaffolding (Backend)
 
@@ -725,13 +743,30 @@ npm run develop
 - Add a .env.example file with placeholders (no secrets)
 - CI should run lint, typecheck, and tests before deploy
 
-## Deployment (Single PaaS Rule)
+## Deployment
 
-- Deploy all services under a single provider:
-  - Frontend → Next.js app
-  - Backend → NestJS modulith
-  - CMS → Strapi
-  - Database → Supabase Postgres
-- No Kubernetes, no early microservices, no multi-cloud
+Frontend → Vercel
+- Connect the apps/frontend folder to a Vercel project
+- Set NEXT_PUBLIC_API_URL to the Railway backend URL
 
-By following these steps, you will have a working tri-service setup (frontend, backend, CMS) backed by Supabase Postgres that adheres to AudiologyLink’s strict modular, event-driven, and compliance-aware architecture.
+Backend → Railway
+- Connect the apps/backend folder to a Railway service
+- Add a Redis plugin to the Railway project
+- Set all environment variables from .env.example
+
+CMS → Railway
+- Connect the apps/cms folder to a separate Railway service
+- Set CMS environment variables including DATABASE_URL 
+  pointing to Supabase
+
+Database → Supabase
+- All schemas and migrations run directly on the Supabase project
+- Never use Railway's built-in PostgreSQL
+
+File Storage → Supabase Storage
+- Use Supabase Storage buckets for all file uploads
+- Access via the NestJS backend only, never directly from frontend
+
+No Kubernetes. No Docker in production. No VPS. No multi-cloud.
+
+By following these steps, you will have a working tri-service setup (frontend, backend, CMS) backed by Supabase Postgres that adheres to AudiologyLink's strict modular, event-driven, and compliance-aware architecture.
