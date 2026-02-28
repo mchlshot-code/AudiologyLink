@@ -4,14 +4,14 @@ import { PassportModule } from '@nestjs/passport';
 import { randomUUID } from 'crypto';
 import { AUTH_REPOSITORY, PASSWORD_HASHER } from './contracts/auth.constants';
 import { AUTH_ROLES, type Role } from './contracts/auth.roles';
-import { LoginEndpoint } from './features/login/endpoint';
-import { LoginHandler } from './features/login/handler';
-import { RegisterEndpoint } from './features/register/endpoint';
-import { RegisterHandler } from './features/register/handler';
-import { RefreshEndpoint } from './features/refresh/endpoint';
-import { RefreshHandler } from './features/refresh/handler';
-import { MeEndpoint } from './features/me/endpoint';
-import { LogoutEndpoint } from './features/logout/endpoint';
+import { LoginEndpoint } from './features/Login/endpoint';
+import { LoginHandler } from './features/Login/handler';
+import { RegisterEndpoint } from './features/Register/endpoint';
+import { RegisterHandler } from './features/Register/handler';
+import { RefreshEndpoint } from './features/Refresh/endpoint';
+import { RefreshHandler } from './features/Refresh/handler';
+import { MeEndpoint } from './features/Me/endpoint';
+import { LogoutEndpoint } from './features/Logout/endpoint';
 import type { AuthRepository } from './domain/auth.repository';
 import type { AuthUser } from './domain/auth.user';
 import type { PasswordHasher } from './domain/password-hasher';
@@ -91,5 +91,6 @@ const getSeedUser = async (
       inject: [PASSWORD_HASHER],
     },
   ],
+  exports: [PassportModule, JwtModule],
 })
 export class AuthModule { }

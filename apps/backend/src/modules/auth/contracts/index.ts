@@ -2,7 +2,6 @@ export type {
   AuthTokensDto,
   LoginRequestDto,
   RegisterRequestDto,
-  RefreshRequestDto,
 } from './auth.dto';
 export { AUTH_ROLES } from './auth.roles';
 export type { Role } from './auth.roles';

@@ -5,9 +5,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
-    Users,
-    CalendarDays,
-    Stethoscope,
+    GraduationCap,
     Settings,
     LogOut,
     Menu,
@@ -19,10 +17,8 @@ import { useState } from "react";
 import { useAuth } from "@/components/auth-provider";
 
 const navItems = [
-    { label: "Dashboard", href: "/", icon: LayoutDashboard },
-    { label: "Patients", href: "/patients", icon: Users },
-    { label: "Appointments", href: "/appointments", icon: CalendarDays },
-    { label: "Clinicians", href: "/clinicians", icon: Stethoscope },
+    { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
+    { label: "Education Hub", href: "/hub", icon: GraduationCap },
     { label: "Settings", href: "/settings", icon: Settings },
 ];
 

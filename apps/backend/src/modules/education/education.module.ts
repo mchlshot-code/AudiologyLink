@@ -6,20 +6,20 @@ import { EDUCATION_REPOSITORY } from './domain/education.repository';
 import { PostgresEducationRepository } from './infrastructure/postgres-education.repository';
 
 // ── Existing Features ──
-import { RegisterStudentEndpoint } from './features/register-student/endpoint';
-import { RegisterStudentHandler } from './features/register-student/handler';
-import { VerifyStudentEndpoint } from './features/verify-student/endpoint';
-import { VerifyStudentHandler } from './features/verify-student/handler';
+import { RegisterStudentEndpoint } from './features/RegisterStudent/endpoint';
+import { RegisterStudentHandler } from './features/RegisterStudent/handler';
+import { VerifyStudentEndpoint } from './features/VerifyStudent/endpoint';
+import { VerifyStudentHandler } from './features/VerifyStudent/handler';
 
 // ── New Features ──
-import { EnrollInCourseEndpoint } from './features/enroll-in-course/endpoint';
-import { EnrollInCourseHandler } from './features/enroll-in-course/handler';
-import { TrackLessonProgressEndpoint } from './features/track-lesson-progress/endpoint';
-import { TrackLessonProgressHandler } from './features/track-lesson-progress/handler';
-import { SubmitQuizAttemptEndpoint } from './features/submit-quiz-attempt/endpoint';
-import { SubmitQuizAttemptHandler } from './features/submit-quiz-attempt/handler';
-import { GetStudentProgressEndpoint } from './features/get-student-progress/endpoint';
-import { GetStudentProgressHandler } from './features/get-student-progress/handler';
+import { EnrollInCourseEndpoint } from './features/EnrollInCourse/endpoint';
+import { EnrollInCourseHandler } from './features/EnrollInCourse/handler';
+import { TrackLessonProgressEndpoint } from './features/TrackLessonProgress/endpoint';
+import { TrackLessonProgressHandler } from './features/TrackLessonProgress/handler';
+import { SubmitQuizAttemptEndpoint } from './features/SubmitQuizAttempt/endpoint';
+import { SubmitQuizAttemptHandler } from './features/SubmitQuizAttempt/handler';
+import { GetStudentProgressEndpoint } from './features/GetStudentProgress/endpoint';
+import { GetStudentProgressHandler } from './features/GetStudentProgress/handler';
 
 @Module({
     imports: [AuthModule],

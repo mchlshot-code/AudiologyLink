@@ -26,6 +26,7 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.0",
     "@nestjs/platform-express": "^11.0.1",
+    "@supabase/supabase-js": "^2.98.0",
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "passport": "^0.7.0",

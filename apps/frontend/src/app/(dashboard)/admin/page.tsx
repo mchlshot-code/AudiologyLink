@@ -5,7 +5,7 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { Users, CalendarDays, Stethoscope, Activity } from "lucide-react";
+import { GraduationCap, BookOpen, Activity } from "lucide-react";
 
 type ClinicStatus = {
     clinicId: string;
@@ -30,25 +30,18 @@ async function getClinicStatus(): Promise<ClinicStatus | null> {
 
 const statCards = [
     {
-        title: "Total Patients",
+        title: "Enrolled Students",
         value: "—",
         description: "Coming soon",
-        icon: Users,
+        icon: GraduationCap,
         color: "text-primary",
     },
     {
-        title: "Today's Appointments",
+        title: "Active Courses",
         value: "—",
         description: "Coming soon",
-        icon: CalendarDays,
+        icon: BookOpen,
         color: "text-brand-cyan",
-    },
-    {
-        title: "Active Clinicians",
-        value: "—",
-        description: "Coming soon",
-        icon: Stethoscope,
-        color: "text-success",
     },
 ];
 
@@ -63,7 +56,7 @@ export default async function DashboardPage() {
                     Welcome back
                 </h2>
                 <p className="text-muted-foreground text-sm">
-                    Here&apos;s an overview of your clinic.
+                    Here&apos;s an overview of the Education Hub.
                 </p>
             </div>
 
@@ -103,8 +96,8 @@ export default async function DashboardPage() {
                         {status && (
                             <span
                                 className={`rounded-full px-3 py-1 text-xs font-semibold ${status.status === "open"
-                                        ? "bg-success/10 text-success"
-                                        : "bg-destructive/10 text-destructive"
+                                    ? "bg-success/10 text-success"
+                                    : "bg-destructive/10 text-destructive"
                                     }`}
                             >
                                 {status.status.toUpperCase()}
