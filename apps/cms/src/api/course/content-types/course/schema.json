@@ -1,0 +1,64 @@
+{
+    "kind": "collectionType",
+    "collectionName": "courses",
+    "info": {
+        "singularName": "course",
+        "pluralName": "courses",
+        "displayName": "Course",
+        "description": "Tier 2 - Premium Educational Course"
+    },
+    "options": {
+        "draftAndPublish": true
+    },
+    "pluginOptions": {},
+    "attributes": {
+        "title": {
+            "type": "string",
+            "required": true
+        },
+        "slug": {
+            "type": "uid",
+            "targetField": "title",
+            "required": true
+        },
+        "description": {
+            "type": "richtext"
+        },
+        "difficulty_level": {
+            "type": "enumeration",
+            "enum": [
+                "Beginner",
+                "Intermediate",
+                "Advanced"
+            ],
+            "default": "Beginner"
+        },
+        "estimated_hours": {
+            "type": "decimal"
+        },
+        "cover_image": {
+            "type": "media",
+            "multiple": false,
+            "required": false,
+            "allowedTypes": [
+                "images"
+            ]
+        },
+        "category": {
+            "type": "relation",
+            "relation": "manyToOne",
+            "target": "api::category.category",
+            "inversedBy": "courses"
+        },
+        "is_premium": {
+            "type": "boolean",
+            "default": true
+        },
+        "lessons": {
+            "type": "relation",
+            "relation": "oneToMany",
+            "target": "api::lesson.lesson",
+            "mappedBy": "course"
+        }
+    }
+}

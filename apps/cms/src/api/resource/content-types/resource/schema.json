@@ -1,0 +1,48 @@
+{
+    "kind": "collectionType",
+    "collectionName": "resources",
+    "info": {
+        "singularName": "resource",
+        "pluralName": "resources",
+        "displayName": "Public Resource",
+        "description": "Tier 1 - Public Educational Content"
+    },
+    "options": {
+        "draftAndPublish": true
+    },
+    "pluginOptions": {},
+    "attributes": {
+        "title": {
+            "type": "string",
+            "required": true
+        },
+        "slug": {
+            "type": "uid",
+            "targetField": "title",
+            "required": true
+        },
+        "content": {
+            "type": "richtext",
+            "required": true
+        },
+        "category": {
+            "type": "relation",
+            "relation": "manyToOne",
+            "target": "api::category.category",
+            "inversedBy": "resources"
+        },
+        "cover_image": {
+            "type": "media",
+            "multiple": false,
+            "required": false,
+            "allowedTypes": [
+                "images"
+            ]
+        },
+        "is_public": {
+            "type": "boolean",
+            "default": true,
+            "required": true
+        }
+    }
+}

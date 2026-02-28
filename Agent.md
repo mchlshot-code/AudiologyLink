@@ -12,6 +12,100 @@ This document defines NON-NEGOTIABLE architectural rules.
 
 ---
 
+# 🚨 CURRENT BUILD STATE — READ THIS FIRST
+
+This section defines what has already been built and what must be built next.
+Do not suggest, scaffold, or generate anything outside this scope without being explicitly asked.
+
+---
+
+## ✅ What Is Already Built
+
+### Architecture Core (Complete)
+- Modular Monolith structure established in `apps/backend/src/modules`
+- AuthModule fully implemented with JWT HTTP-only cookies, role guards, and all auth endpoints
+- Roles: `admin`, `clinician`, `receptionist`, `patient`, `student`
+- Next.js frontend shell with sidebar layout, brand tokens, shadcn/ui components
+- Supabase PostgreSQL connected with RLS enabled
+- Redis session store on Railway configured
+
+### Education Module (In Progress)
+**CMS — Strapi content types created:**
+- `Category` (name, slug)
+- `Resource` (title, content, cover_image, is_public) — Tier 1 public articles
+- `Course` (title, description, difficulty_level, estimated_hours, is_premium)
+- `Lesson` (title, sequence_order, content_type, video_url, reading_content)
+- `Quiz` (title, passing_score_percentage, questions JSON)
+
+**Backend — NestJS education module:**
+- `education` PostgreSQL schema with tables: `student_profiles`, `course_enrollments`, `lesson_progress`, `quiz_attempts`
+- RLS policies applied to all education schema tables
+- `POST /api/education/students/register` — student onboarding
+- `PATCH /api/education/students/:userId/verify` — admin approval
+
+**Frontend — Pages scaffolded with MOCK DATA (not yet wired to real APIs):**
+- `/` — Public landing page
+- `/resources` — Tier 1 public resource grid
+- `/courses` — Public course catalogue
+- `/register` — Two-step student registration flow
+- `/hub` — Student dashboard (progress overview)
+- `/hub/courses/[slug]` — Course syllabus and lesson list
+- `/hub/courses/[slug]/lesson/[id]` — Lesson player (video + reading)
+- `/hub/courses/[slug]/quiz/[id]` — Quiz engine with answer feedback
+
+---
+
+## 🔴 WHAT TO BUILD NEXT — IN THIS EXACT ORDER
+
+### Priority 1 — Wire up real data (DO THIS BEFORE ANYTHING ELSE)
+Replace ALL mock data arrays in the frontend with real fetch calls:
+- Public pages (`/resources`, `/courses`, `/`) → fetch from Strapi REST API only
+- Protected pages (`/hub`, lesson player, quiz) → fetch content from Strapi, fetch progress from NestJS backend
+- Use `{ next: { revalidate: 3600 } }` on all Strapi fetches for ISR caching
+- All NestJS backend calls must use `credentials: "include"`
+- Handle loading states and error states on every fetch — no unhandled rejections
+- Start with `/resources` first — it is the simplest (one Strapi collection, no auth)
+
+### Priority 2 — Student verification notification
+- Email trigger when a student submits registration
+- Email trigger when admin approves or rejects a student
+- Without this, students register and disappear
+
+### Priority 3 — Fix Quiz questions structure
+- The `questions` JSON field on the Quiz Strapi content type is a flat blob
+- Create a separate `Question` content type in Strapi related to Quiz
+- This enables analytics on which questions students fail most often
+
+### Priority 4 — Noise Monitoring module (after Education Hub is fully wired)
+
+### Priority 5 — PTM Tinnitus module (after Noise Monitoring is stable)
+
+---
+
+## 🚫 WHAT IS EXPLICITLY FORBIDDEN — DO NOT BUILD
+
+- **Clinician Dashboard** — This is Phase 2 (months 5–10). Do not scaffold, suggest, or generate any clinician-facing patient management UI. Not even a placeholder.
+- **Patient roster management** — Phase 2. Same reason.
+- **Professional audiologist portal** — Phase 2.
+- **Appointment booking** — Not in scope for MVP at all.
+- **Live classes or video conferencing** — Not in scope.
+- **Peer discussion forums** — Not in scope for MVP.
+- **SCORM player** — Deferred. Use video + quiz for MVP.
+- **Institutional cohort dashboards** — Phase 2 when university partnerships exist.
+- **Any new module** that is not `education`, `noise-monitoring`, or `ptm` — requires explicit instruction.
+
+If asked to build anything in the forbidden list, refuse and explain it is not in the current MVP scope.
+
+---
+
+## ⚠️ KNOWN TECHNICAL DEBT — DO NOT MAKE WORSE
+
+- All Education Hub frontend pages currently use mock data arrays. The next task is replacing them with real API calls. Do not add new pages that also use mock data.
+- Video hosting for lesson content is not yet decided. Do not hardcode any video CDN. Use the `video_url` field from Strapi and render whatever URL is stored there.
+- Student verification has no notification layer yet. Do not build admin verification UI before the email trigger exists.
+
+---
+
 # 1️⃣ Core Philosophy
 
 AudiologyLink is:
@@ -447,6 +541,110 @@ Architecture integrity is a strategic advantage.
 Protect it.
 
 
+# 2️⃣0️⃣ Education Module — Specific Rules
+
+This section governs everything built inside the `education` module. These rules are in addition to the general module rules above.
+
+---
+
+## Backend Contracts (Public Interface)
+
+The education module exposes these contracts to other modules:
+
+```typescript
+// education/contracts/index.ts
+StudentVerifiedEvent       // emitted when admin verifies a student
+StudentEnrolledEvent       // emitted when student enrolls in a course
+QuizAttemptCompletedEvent  // emitted when a quiz is submitted
+```
+
+No other module may access `education/domain` or `education/infrastructure` directly.
+
+---
+
+## CMS vs Backend Responsibility Split
+
+This split is NON-NEGOTIABLE. Violations corrupt the architecture.
+
+| Data Type | Lives In | Fetched By |
+|---|---|---|
+| Course titles, descriptions, lesson content, quiz questions | Strapi CMS | Public BFF (Next.js server component) |
+| Student profiles, enrollment records, lesson progress, quiz scores | NestJS `education` schema | NestJS backend only |
+| Whether a course is premium/public | Strapi `is_premium` field | Public BFF |
+| Whether a student has access to premium content | NestJS role + subscription check | NestJS backend |
+
+Never put clinical/progress data in Strapi.
+Never put content structure in the NestJS database.
+
+---
+
+## Frontend Data Fetching Rules (Education Hub)
+
+### Public pages — Server Components only
+```typescript
+// Correct pattern for /resources, /courses, /
+const data = await fetch(`${process.env.NEXT_PUBLIC_CMS_URL}/api/resources`, {
+  next: { revalidate: 3600 }
+})
+```
+
+### Protected pages — Two separate fetches, merged in component
+```typescript
+// Step 1: Fetch content from Strapi (server component)
+const courseContent = await fetch(`${CMS_URL}/api/courses?filters[slug]=${slug}`, {
+  next: { revalidate: 3600 }
+})
+
+// Step 2: Fetch student progress from NestJS backend (server component with cookies)
+const progress = await fetch(`${API_URL}/api/education/progress/${slug}`, {
+  credentials: 'include',
+  headers: { Cookie: cookies().toString() }
+})
+
+// Step 3: Merge in the component — never in a shared API layer
+```
+
+Never make a single combined endpoint that mixes CMS content with clinical progress data.
+
+---
+
+## Education Schema Tables
+
+```sql
+-- education.student_profiles
+-- education.course_enrollments
+-- education.lesson_progress
+-- education.quiz_attempts
+-- All tables have RLS ENABLED
+-- All tables are owned by the education module exclusively
+```
+
+No other module writes to these tables.
+The education module reads from these tables only — never from another module's schema.
+
+---
+
+## Current Education Module Features (Backend)
+
+```
+/modules/education
+  /contracts
+  /domain
+  /infrastructure
+  /features
+    /RegisterStudent        → POST /api/education/students/register
+    /VerifyStudent          → PATCH /api/education/students/:userId/verify
+    /EnrollInCourse         → POST /api/education/enrollments (TODO)
+    /TrackLessonProgress    → PATCH /api/education/progress/lesson/:id (TODO)
+    /SubmitQuizAttempt      → POST /api/education/quiz-attempts (TODO)
+    /GetStudentProgress     → GET /api/education/progress/overview (TODO)
+    /GenerateCertificate    → POST /api/education/certificates (TODO)
+```
+
+Features marked TODO are the next backend tasks after frontend data wiring is complete.
+
+---
+
 # Infrastructure & Cost-Conscious Deployment Strategy
 
 AudiologyLink is currently in early-stage development with limited funding.
@@ -664,7 +862,8 @@ npx shadcn@latest init
   - Components must use the shared design tokens (`text-primary`, `bg-brand-cyan`, etc.); no ad-hoc colors
 
 - Base the application UI on a dashboard-style layout:
-  - Sidebar navigation for core modules (Patients, Appointments, Clinicians, Reports, Settings)
+  - Sidebar navigation for MVP modules ONLY: Education Hub, Noise Monitor, Settings
+  - DO NOT add sidebar entries for: Patients, Appointments, Clinicians, Reports — these are Phase 2
   - Top header with search, notifications, and user account menu
   - Content area that uses cards, tables, and forms from shadcn/ui
 

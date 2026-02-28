@@ -3,6 +3,7 @@ export const AUTH_ROLES = [
   'clinician',
   'receptionist',
   'patient',
+  'student',
 ] as const;
 
 export type Role = (typeof AUTH_ROLES)[number];

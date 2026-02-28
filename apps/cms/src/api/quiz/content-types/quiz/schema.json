@@ -1,0 +1,34 @@
+{
+    "kind": "collectionType",
+    "collectionName": "quizzes",
+    "info": {
+        "singularName": "quiz",
+        "pluralName": "quizzes",
+        "displayName": "Quiz"
+    },
+    "options": {
+        "draftAndPublish": true
+    },
+    "pluginOptions": {},
+    "attributes": {
+        "title": {
+            "type": "string",
+            "required": true
+        },
+        "passing_score_percentage": {
+            "type": "integer",
+            "required": true,
+            "default": 80
+        },
+        "questions": {
+            "type": "json",
+            "required": true
+        },
+        "lesson": {
+            "type": "relation",
+            "relation": "manyToOne",
+            "target": "api::lesson.lesson",
+            "inversedBy": "quizzes"
+        }
+    }
+}

@@ -18,3 +18,7 @@ Thumbs.db
 desktop.ini
 .idea/
 .vscode/
+
+# Local documents — do not commit
+AudiologyLink_Proposal.docx
+Education_hub_features.md

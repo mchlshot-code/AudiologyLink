@@ -2,7 +2,6 @@ import {
     Card,
     CardContent,
     CardDescription,
-    CardHeader,
     CardTitle,
 } from "@/components/ui/card";
 import { Users } from "lucide-react";
@@ -24,7 +23,7 @@ export default function PatientsPage() {
                     </div>
                     <CardTitle className="text-lg mb-1">No patients yet</CardTitle>
                     <CardDescription className="max-w-sm">
-                        The Patients module is coming soon. You'll be able to manage patient
+                        The Patients module is coming soon. You&apos;ll be able to manage patient
                         records, view clinical history, and track appointments here.
                     </CardDescription>
                 </CardContent>

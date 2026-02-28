@@ -41,8 +41,8 @@ export default function LoginPage() {
                 throw new Error(data?.message ?? "Invalid email or password");
             }
 
-            // On success, redirect to dashboard
-            router.push("/");
+            // On success, redirect to the Education Hub dashboard
+            router.push("/hub");
         } catch (err) {
             setError(err instanceof Error ? err.message : "Login failed");
         } finally {

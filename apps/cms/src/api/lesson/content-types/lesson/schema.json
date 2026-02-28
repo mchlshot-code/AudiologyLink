@@ -1,0 +1,56 @@
+{
+    "kind": "collectionType",
+    "collectionName": "lessons",
+    "info": {
+        "singularName": "lesson",
+        "pluralName": "lessons",
+        "displayName": "Lesson"
+    },
+    "options": {
+        "draftAndPublish": true
+    },
+    "pluginOptions": {},
+    "attributes": {
+        "title": {
+            "type": "string",
+            "required": true
+        },
+        "slug": {
+            "type": "uid",
+            "targetField": "title",
+            "required": true
+        },
+        "sequence_order": {
+            "type": "integer",
+            "required": true
+        },
+        "content_type": {
+            "type": "enumeration",
+            "enum": [
+                "Video",
+                "Reading",
+                "CaseStudy"
+            ],
+            "required": true,
+            "default": "Reading"
+        },
+        "video_url": {
+            "type": "string"
+        },
+        "reading_content": {
+            "type": "richtext"
+        },
+        "course": {
+            "type": "relation",
+            "relation": "manyToOne",
+            "target": "api::course.course",
+            "inversedBy": "lessons"
+        },
+        "quizzes": {
+            "type": "relation",
+            "relation": "oneToMany",
+            "target": "api::quiz.quiz",
+            "mappedBy": "lesson"
+        }
+    }
+}

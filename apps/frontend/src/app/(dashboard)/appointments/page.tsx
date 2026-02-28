@@ -23,7 +23,7 @@ export default function AppointmentsPage() {
                     </div>
                     <CardTitle className="text-lg mb-1">No appointments yet</CardTitle>
                     <CardDescription className="max-w-sm">
-                        The Appointments module is coming soon. You'll be able to schedule
+                        The Appointments module is coming soon. You&apos;ll be able to schedule
                         visits, manage time slots, and send reminders here.
                     </CardDescription>
                 </CardContent>

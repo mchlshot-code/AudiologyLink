@@ -1,0 +1,37 @@
+{
+    "kind": "collectionType",
+    "collectionName": "categories",
+    "info": {
+        "singularName": "category",
+        "pluralName": "categories",
+        "displayName": "Category"
+    },
+    "options": {
+        "draftAndPublish": true
+    },
+    "pluginOptions": {},
+    "attributes": {
+        "name": {
+            "type": "string",
+            "unique": true,
+            "required": true
+        },
+        "slug": {
+            "type": "uid",
+            "targetField": "name",
+            "required": true
+        },
+        "resources": {
+            "type": "relation",
+            "relation": "oneToMany",
+            "target": "api::resource.resource",
+            "mappedBy": "category"
+        },
+        "courses": {
+            "type": "relation",
+            "relation": "oneToMany",
+            "target": "api::course.course",
+            "mappedBy": "category"
+        }
+    }
+}

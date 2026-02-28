@@ -23,7 +23,7 @@ export default function CliniciansPage() {
                     </div>
                     <CardTitle className="text-lg mb-1">No clinicians yet</CardTitle>
                     <CardDescription className="max-w-sm">
-                        The Clinicians module is coming soon. You'll be able to manage
+                        The Clinicians module is coming soon. You&apos;ll be able to manage
                         clinician profiles, specializations, and availability here.
                     </CardDescription>
                 </CardContent>
